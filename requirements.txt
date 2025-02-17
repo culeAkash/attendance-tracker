@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+psycopg2-binary  # Required if using PostgreSQL
+pydantic
+sqlalchemy       # ORM for database management
+python-dotenv    # For managing environment variables
