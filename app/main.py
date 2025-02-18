@@ -1,21 +1,12 @@
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
-from .databases import SqliteSessionLocal,PostgresSessionLocal
 
+from app.databases import Base,SqliteSessionLocal,PostgresSessionLocal,sqlite_engine,postgres_engine
+from app.routers.staff import staff_router
 
 app = FastAPI()
-
 # Dependency to get database session
-def get_sqlite_db():
-    db = SqliteSessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
-def get_postgres_db():
-    db = PostgresSessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+        
+app.include_router(staff_router,prefix="/staff",tags=["staff"])
+        

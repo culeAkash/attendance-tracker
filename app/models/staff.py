@@ -3,20 +3,20 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 import uuid
 import enum
-
-
-Base = declarative_base()
+from app.databases import Base
 
 class StaffRole(enum.Enum):
-    teacher = "TEACHER"
-    principal = "PRINCIPAL"
-    admin = "ADMIN"
+    TEACHER = "TEACHER"
+    PRINCIPAL = "PRINCIPAL"
+    ADMIN = "ADMIN"
     
 class Staff(Base):
     __tablename__ = "staff"
     staff_id = Column(String,primary_key=True,index=True,default=lambda:str(uuid.uuid4()))
     name = Column(String,nullable=False)
     email = Column(String,nullable=False,unique=True,index=True)
+    phone_number = Column(String,nullable=False,unique=True)
+    hashed_password = Column(String,nullable=False)
     role = Column(Enum(StaffRole),nullable=False)
     
     #relationships

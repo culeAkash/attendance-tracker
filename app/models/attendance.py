@@ -1,16 +1,15 @@
 from sqlalchemy import Column, Integer, String, Date, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
-
-Base = declarative_base()
+from app.databases import Base
 class Attendance(Base):
     __tablename__ = "attendance"
     attendance_id = Column(Integer, primary_key=True, autoincrement=True)
     date = Column(Date, nullable=False)
     status = Column(String, nullable=False)  # present, absent
-    student_id = Column(Integer, ForeignKey("student.student_id"), nullable=False)
-    standard_id = Column(Integer, ForeignKey("standard.standard_id"), nullable=False)
-    recorded_by = Column(Integer, ForeignKey("staff.staff_id"), nullable=False)  # Teacher who marked attendance
+    student_id = Column(String, ForeignKey("student.student_id"), nullable=False)
+    standard_id = Column(String, ForeignKey("standard.standard_id"), nullable=False)
+    recorded_by = Column(String, ForeignKey("staff.staff_id"), nullable=False)  # Teacher who marked attendance
 
     # Relationships
     student = relationship("Student", back_populates="attendance_records")

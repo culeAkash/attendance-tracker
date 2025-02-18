@@ -2,8 +2,7 @@ from sqlalchemy import Column, Integer, String,ForeignKey,DateTime,Date
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 import uuid
-
-Base = declarative_base()
+from app.databases import Base
 
 class Standard(Base):
     __tablename__ = 'standard'

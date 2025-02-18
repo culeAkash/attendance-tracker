@@ -2,8 +2,7 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 import uuid
-
-Base = declarative_base()
+from app.databases import Base
 
 class Parent(Base):
     __tablename__ = 'parent'
