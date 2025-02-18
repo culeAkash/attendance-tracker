@@ -6,3 +6,5 @@ sqlalchemy       # ORM for database management
 python-dotenv    # For managing environment variables
 phonenumbers
 pydantic[email]
+pyjwt
+passlib[bcrypt]

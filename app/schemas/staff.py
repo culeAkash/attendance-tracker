@@ -4,7 +4,7 @@ class CreateStaff(BaseModel):
     name: str = Field(...,min_length=3,max_length=20)
     email : EmailStr
     phone_number : str
-    hashed_password : str = Field(...,min_length=8)
+    password : str = Field(...,min_length=8)
     role : str = Field(..., enum=["TEACHER", "PRINCIPAL", "ADMIN"])
     
     
