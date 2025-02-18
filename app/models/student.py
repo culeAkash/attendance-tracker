@@ -23,7 +23,7 @@ class Student(Base):
     
     student_id = Column(String, primary_key=True, index=True,default=str(uuid.uuid4()))
     name = Column(String, index=True)
-    roll_number = Column(String, index=True)
+    roll_number = Column(Integer, index=True,autoincrement=True)
     date_of_birth = Column(Date, nullable=False)
     gender = Column(Enum(Gender), nullable=False)
     standard_id = Column(String, ForeignKey('standard.standard_id'))

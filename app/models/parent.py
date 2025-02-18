@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 import uuid
 from app.databases import Base
-
+from sqlalchemy import ForeignKey
 class Parent(Base):
     __tablename__ = 'parent'
     
