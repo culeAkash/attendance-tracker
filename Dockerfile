@@ -5,16 +5,19 @@ FROM python:3.9-slim
 WORKDIR /app
 
 # Copy the requirements file into the container
-COPY . .
+COPY requirements.txt .
 
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the current directory contents into the container
-COPY app/ .
+# Copy the application code into the container
+# COPY . .
 
 # Ensure the .env file is copied
 COPY .env .env
+
+# Set correct permissions for `/app`
+RUN chmod -R 777 /app
 
 # Make port 80 available to the world outside this container
 EXPOSE 8000
