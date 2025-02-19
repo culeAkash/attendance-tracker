@@ -4,6 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 import uuid
 from app.databases import Base
 import enum
+from sqlalchemy.orm import Session
 
 class Gender(enum.Enum):
     MALE = 'Male'
@@ -35,3 +36,13 @@ class Student(Base):
     parent = relationship("Parent", back_populates="students")
     attendance_records = relationship("Attendance", back_populates="student")
     address = relationship("Address", back_populates="student",uselist=False)
+    
+    
+    @staticmethod
+    async def get_next_roll_number(db:Session):
+        last_roll_number = db.query(Student.roll_number).order_by(Student.roll_number.desc()).first()
+        if last_roll_number and last_roll_number[0]:
+            next_roll_number = int(last_roll_number[0]) + 1
+        else:
+            next_roll_number = 1
+        return next_roll_number

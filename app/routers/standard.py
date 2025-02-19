@@ -7,11 +7,12 @@ from app.models import Staff,Standard
 from typing import Annotated
 from app.models import Staff
 from fastapi.exceptions import HTTPException
+from fastapi.responses import JSONResponse
 standard_router = APIRouter()
 
 
-@standard_router.post("/create_standard")
-async def create_standard(standard_data : CreateStandardRequest,standard_params : Annotated[CreateStandardQueryParams,Query()],current_user : Staff = Depends(get_current_user),db:Session = Depends(get_sqlite_db)) -> ApiResponse[StandardResponse]:
+@standard_router.post("/create_standard",status_code=201)
+async def create_standard(standard_data : CreateStandardRequest,standard_params : Annotated[CreateStandardQueryParams,Query()],current_user : Staff = Depends(get_current_user),db:Session = Depends(get_sqlite_db)) -> JSONResponse:
     try:
         # check if currently logged in user has the permission to create a new standard
         current_user = await check_current_user_admin_principal(current_user)
@@ -36,10 +37,9 @@ async def create_standard(standard_data : CreateStandardRequest,standard_params 
         )
         db.commit()
         return api_response
-    except Exception as e:
+    except HTTPException as e:
         db.rollback()
-        print(f"An error occurred while creating standard: {e}")
-        raise HTTPException(e)
+        return JSONResponse(status_code=e.status_code, content={"message": e.detail})
     finally:
         db.close()
     

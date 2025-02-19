@@ -1,5 +1,6 @@
 from fastapi import APIRouter,Depends
 from typing import List
+from fastapi.responses import JSONResponse
 
 staff_router = APIRouter()
 
@@ -12,8 +13,12 @@ from app.routers.auth import get_current_user
 from app.schemas.responses import ApiResponse
 
 
-@staff_router.post("/createStaff", response_model=ApiResponse[StaffResponse])
+@staff_router.post("/createStaff", status_code=201)
 async def create_staff(staffData: CreateStaff,db : Session = Depends(get_sqlite_db)):
+    
+    #check if staff with email or phone number already exists
+    Staff.check_staff_by_email_phone(email=staffData.email,phone=staffData.phone_number,db=db)
+
     hashed_password = get_password_hash(staffData.password)
     staffData.__delattr__("password")
     to_create_staff = Staff(**staffData.model_dump(),hashed_password=hashed_password)
@@ -21,7 +26,7 @@ async def create_staff(staffData: CreateStaff,db : Session = Depends(get_sqlite_
     db.add(to_create_staff)
     db.commit()
     db.refresh(to_create_staff)  # to get the newly generated id in the response
-    return ApiResponse[StaffResponse](status="success", message="Staff Created Successfully", status_code=200, data=StaffResponse.model_validate(to_create_staff))
+    return ApiResponse[StaffResponse](status="success", message="Staff Created Successfully", status_code=201, data=StaffResponse.model_validate(to_create_staff))
 
 @staff_router.get("/getAllStaff", response_model=ApiResponse[List[StaffResponse]])
 async def get_all_staff(current_user : Staff =Depends(get_current_user),db : Session = Depends(get_sqlite_db)):

@@ -5,7 +5,7 @@ import uuid
 import enum
 from app.databases import Base,get_sqlite_db
 from fastapi import Depends
-from app.exceptions import ResourceNotFoundException
+from app.exceptions import ResourceNotFoundException,DuplicateKeyException
 
 class StaffRole(enum.Enum):
     TEACHER = "TEACHER"
@@ -32,6 +32,13 @@ class Staff(Base):
         if not staff:
             raise ResourceNotFoundException("Staff","staff_id",staff_id)
         return staff
+    
+    @classmethod
+    def check_staff_by_email_phone(cls,email:str,phone:str,db : Session):
+        staff = db.query(cls).filter_by(email=email,phone_number=phone).first()
+        if staff:
+            raise DuplicateKeyException(f"Staff already present in database with email {email} or phone number {phone}")
+        return None
         
     
     

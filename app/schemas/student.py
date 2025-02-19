@@ -1,7 +1,7 @@
 from pydantic import BaseModel,Field,EmailStr,field_validator
 import phonenumbers
 from .parent import ParentCreate,ParentResponse
-        
+from datetime import date,datetime
 class AddressCreate(BaseModel):
     street : str = Field(..., min_length=5, max_length=50)
     city : str = Field(..., min_length=3, max_length=20)
@@ -18,7 +18,7 @@ class AddressResponse(BaseModel):
 
 class CreateStudent(BaseModel):
     name : str = Field(...,min_length=5,max_length=20)
-    date_of_birth : str = Field(..., format="yyyy-MM-dd")
+    date_of_birth : date = Field(..., format="yyyy-MM-dd")
     gender : str = Field(...,enum=["MALE","FEMALE"])
     parent : ParentCreate 
     address : AddressCreate
@@ -34,12 +34,13 @@ class StudentStandardResponse(BaseModel):
     standard_id : str
     grade : str 
     section : str 
+    model_config = {'from_attributes': True}
         
 class StudentResponse(BaseModel):
     student_id : str
     name : str = Field(...,min_length=5,max_length=20)
     roll_number : int = Field(..., gt=0)
-    date_of_birth : str = Field(..., format="yyyy-MM-dd")
+    date_of_birth : date
     gender : str = Field(...,enum=["MALE","FEMALE"])
     standard : StudentStandardResponse
     address : AddressResponse

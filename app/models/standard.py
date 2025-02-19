@@ -58,6 +58,7 @@ class Standard(Base):
         standard = db.query(Standard).filter_by(grade=grade, section=section).first()
         if not standard:
             raise ResourceNotFoundException("Standard","grade and section",f"{grade},{section}")
+        # standard.grade = standard.grade[0]
         return standard
     
     
