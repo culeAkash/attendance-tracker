@@ -7,7 +7,7 @@ from sqlalchemy import ForeignKey
 class Parent(Base):
     __tablename__ = 'parent'
     
-    parent_id = Column(String, primary_key=True, index=True,default= str(uuid.uuid4()))
+    parent_id = Column(String, primary_key=True, index=True,default=lambda:str(uuid.uuid4()))
     name = Column(String, index=True)
     email = Column(String, unique=True, index=True)
     phone = Column(String)

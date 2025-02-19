@@ -11,7 +11,7 @@ class Gender(enum.Enum):
 
 class Address(Base):
     __tablename__ = 'address'
-    address_id = Column(String, primary_key=True, index=True,default=str(uuid.uuid4()))
+    address_id = Column(String, primary_key=True, index=True,default=lambda:str(uuid.uuid4()))
     street = Column(String, nullable=False)
     city = Column(String, nullable=False)
     state = Column(String, nullable=False)
@@ -21,7 +21,7 @@ class Address(Base):
 class Student(Base):
     __tablename__ = 'student'
     
-    student_id = Column(String, primary_key=True, index=True,default=str(uuid.uuid4()))
+    student_id = Column(String, primary_key=True, index=True,default=lambda:str(uuid.uuid4()))
     name = Column(String, index=True)
     roll_number = Column(Integer, index=True,autoincrement=True)
     date_of_birth = Column(Date, nullable=False)

@@ -18,10 +18,8 @@ class AddressResponse(BaseModel):
 
 class CreateStudent(BaseModel):
     name : str = Field(...,min_length=5,max_length=20)
-    roll_number : int = Field(..., gt=0)
     date_of_birth : str = Field(..., format="yyyy-MM-dd")
     gender : str = Field(...,enum=["MALE","FEMALE"])
-    standard_id : str
     parent : ParentCreate 
     address : AddressCreate
     
@@ -32,6 +30,10 @@ class CreateStudent(BaseModel):
             raise ValueError("Invalid gender")
         return gender
 
+class StudentStandardResponse(BaseModel):
+    standard_id : str
+    grade : str 
+    section : str 
         
 class StudentResponse(BaseModel):
     student_id : str
@@ -39,6 +41,7 @@ class StudentResponse(BaseModel):
     roll_number : int = Field(..., gt=0)
     date_of_birth : str = Field(..., format="yyyy-MM-dd")
     gender : str = Field(...,enum=["MALE","FEMALE"])
+    standard : StudentStandardResponse
     address : AddressResponse
     parent : ParentResponse
     model_config = {'from_attributes': True}

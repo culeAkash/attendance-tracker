@@ -6,8 +6,8 @@ import jwt
 from jwt.exceptions import InvalidTokenError,ExpiredSignatureError
 from pydantic import BaseModel
 from app.databases import get_sqlite_db
-from app.models.staff import Staff
-from app.exceptions import ResourceNotFoundException
+from app.models.staff import Staff,StaffRole
+from app.exceptions import ResourceNotFoundException,NotPermittedException
 from app.utils.auth import authenticate_user,create_access_token
 from datetime import timedelta
 from sqlalchemy.orm import Session
@@ -61,7 +61,18 @@ def get_user(email:str,db:Session):
     if not user:
         raise ResourceNotFoundException("Staff","email",email)
     return user
+
+async def check_current_user_admin_principal(user : Staff):
+    # print(">>>>>>>>>>>>>>>>>>",user.role==StaffRole.TEACHER)
+    if user.role!= StaffRole.ADMIN and user.role!=StaffRole.PRINCIPAL:
+        raise NotPermittedException()
+    return user
     
+
+async def check_current_user_teacher(user : Staff):
+    if user.role!= StaffRole.TEACHER:
+        raise NotPermittedException()
+    return user
 
 async def get_current_user(request: Request,db: Session = Depends(get_sqlite_db)):
     credentials_exception = HTTPException(

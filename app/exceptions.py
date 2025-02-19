@@ -19,6 +19,18 @@ class DuplicateKeyException(HTTPException):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=detail,
         )
+        
+class NotPermittedException(HTTPException):
+    def __init__(self):
+        message = "You are not permitted to perform this action"
+        super().__init__(status_code=status.HTTP_403_FORBIDDEN, detail=message)
+
+class BadDataException(HTTPException):
+    def __init__(self, detail: str):
+        super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=detail,
+        )
 
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     return JSONResponse(
@@ -45,6 +57,20 @@ async def password_mismatch_exception_handler(request, exc: PasswordMismatchExce
     )
     
 async def duplicate_key_exception_handler(request: Request, exc: DuplicateKeyException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"message": exc.detail},
+    )
+    
+
+async def not_permitted_exception_handler(request: Request, exc: NotPermittedException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"message": exc.detail},
+    )
+
+
+async def bad_data_exception_handler(request: Request, exc: BadDataException):
     return JSONResponse(
         status_code=exc.status_code,
         content={"message": exc.detail},

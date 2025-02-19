@@ -1,9 +1,11 @@
 from sqlalchemy import Column,Integer,String,Enum,ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship,Session
 import uuid
 import enum
-from app.databases import Base
+from app.databases import Base,get_sqlite_db
+from fastapi import Depends
+from app.exceptions import ResourceNotFoundException
 
 class StaffRole(enum.Enum):
     TEACHER = "TEACHER"
@@ -22,5 +24,14 @@ class Staff(Base):
     #relationships
     standard = relationship("Standard",back_populates="class_teacher",uselist=False)
     attendance_records = relationship("Attendance", back_populates="recorded_by_staff")
+    
+    
+    @classmethod
+    def get_staff_by_staff_id(cls,staff_id,db : Session):
+        staff = db.query(cls).filter_by(staff_id=staff_id).first()
+        if not staff:
+            raise ResourceNotFoundException("Staff","staff_id",staff_id)
+        return staff
+        
     
     
