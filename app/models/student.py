@@ -5,6 +5,7 @@ import uuid
 from app.databases import Base
 import enum
 from sqlalchemy.orm import Session
+from app.exceptions import ResourceNotFoundException
 
 class Gender(enum.Enum):
     MALE = 'Male'
@@ -46,3 +47,10 @@ class Student(Base):
         else:
             next_roll_number = 1
         return next_roll_number
+    
+    @staticmethod
+    async def get_student_by_id(db:Session, student_id: str):
+        student =  db.query(Student).filter(Student.student_id == student_id).first()
+        if not student:
+            raise ResourceNotFoundException("Student","student_id",student_id)
+        return student

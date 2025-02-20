@@ -61,6 +61,13 @@ class Standard(Base):
         # standard.grade = standard.grade[0]
         return standard
     
+    @staticmethod
+    def get_standard_by_id(standard_id, db:Session):
+        standard = db.query(Standard).filter_by(standard_id=standard_id).first()
+        if not standard:
+            raise ResourceNotFoundException("Standard","standard_id",standard_id)
+        return standard
+    
     
         
     

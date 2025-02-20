@@ -63,7 +63,7 @@ def get_user(email:str,db:Session):
     return user
 
 async def check_current_user_admin_principal(user : Staff):
-    # print(">>>>>>>>>>>>>>>>>>",user.role==StaffRole.TEACHER)
+    print(">>>>>>>>>>>>>>>>>>",user.role)
     if user.role!= StaffRole.ADMIN and user.role!=StaffRole.PRINCIPAL:
         raise NotPermittedException()
     return user

@@ -47,5 +47,3 @@ def get_postgres_db():
     finally:
         db.close()
         
-Base.metadata.create_all(sqlite_engine)
-Base.metadata.create_all(postgres_engine)

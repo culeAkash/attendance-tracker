@@ -1,7 +1,8 @@
-from datetime import datetime
+from datetime import datetime,date
 from datetime import timezone
 from typing import Union, List, Dict, Any,Generic,TypeVar
 from pydantic.generics import GenericModel
+from pydantic import BaseModel, Field
 from zoneinfo import ZoneInfo
 
 # Define the IST timezone
@@ -13,8 +14,13 @@ class ApiResponse(GenericModel,Generic[T]):
     status: str = 'success'
     message: str
     status_code: int
-    time_stamp: datetime = datetime.now(ist)
+    time_stamp: str = Field(default_factory=lambda: datetime.now(ist).isoformat()) 
     data: T
+    
+    class Config:
+        json_encoders = {
+            date: lambda v: v.isoformat()  # Convert date to "YYYY-MM-DD"
+        }
     
 class GenericExceptionResponse(GenericModel,Generic[T]):
     status: str = 'error'
