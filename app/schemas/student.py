@@ -2,6 +2,7 @@ from pydantic import BaseModel,Field,EmailStr,field_validator
 import phonenumbers
 from .parent import ParentCreate,ParentResponse
 from datetime import date,datetime
+from typing import Optional
 class AddressCreate(BaseModel):
     street : str = Field(..., min_length=5, max_length=50)
     city : str = Field(..., min_length=3, max_length=20)
@@ -20,6 +21,7 @@ class CreateStudent(BaseModel):
     name : str = Field(...,min_length=5,max_length=20)
     date_of_birth : date = Field(..., format="yyyy-MM-dd")
     gender : str = Field(...,enum=["MALE","FEMALE"])
+    profile_image : Optional[str]
     parent : ParentCreate 
     address : AddressCreate
     

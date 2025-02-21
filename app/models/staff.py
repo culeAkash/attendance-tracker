@@ -20,10 +20,12 @@ class Staff(Base):
     phone_number = Column(String,nullable=False,unique=True)
     hashed_password = Column(String,nullable=False)
     role = Column(Enum(StaffRole),nullable=False)
+    profile_image = Column(String,nullable=True)
     
     #relationships
     standard = relationship("Standard",back_populates="class_teacher",uselist=False)
     attendance_records = relationship("Attendance", back_populates="recorded_by_staff")
+    govt_id = relationship("GovtId",back_populates="staff", primaryjoin="and_(Staff.staff_id == GovtId.user_id, GovtId.user_type == 'STAFF')")
     
     
     @classmethod

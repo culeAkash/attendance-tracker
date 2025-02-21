@@ -28,9 +28,11 @@ class Student(Base):
     roll_number = Column(Integer, index=True,autoincrement=True)
     date_of_birth = Column(Date, nullable=False)
     gender = Column(Enum(Gender), nullable=False)
+    profile_image = Column(String, nullable=True)
     standard_id = Column(String, ForeignKey('standard.standard_id'))
     parent_id = Column(String, ForeignKey('parent.parent_id'))
     address_id = Column(String, ForeignKey('address.address_id'))
+    govt_id = relationship("GovtId",back_populates="student", primaryjoin="and_(Student.student_id == GovtId.user_id, GovtId.user_type == 'STUDENT')")   
     
     # Relationship with Parent model
     standard = relationship("Standard", back_populates="students")

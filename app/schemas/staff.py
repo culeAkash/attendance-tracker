@@ -1,4 +1,5 @@
 from pydantic import BaseModel,Field,EmailStr,field_validator
+from typing import Optional
 import phonenumbers
 class CreateStaff(BaseModel):
     name: str = Field(...,min_length=3,max_length=20)
@@ -6,6 +7,7 @@ class CreateStaff(BaseModel):
     phone_number : str
     password : str = Field(...,min_length=8)
     role : str = Field(..., enum=["TEACHER", "PRINCIPAL", "ADMIN"])
+    profile_image : Optional[str]
     
     
     @field_validator("phone_number")
