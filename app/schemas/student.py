@@ -3,6 +3,7 @@ import phonenumbers
 from .parent import ParentCreate,ParentResponse
 from datetime import date,datetime
 from typing import Optional
+from .govtid import GovtIdSchema
 class AddressCreate(BaseModel):
     street : str = Field(..., min_length=5, max_length=50)
     city : str = Field(..., min_length=3, max_length=20)
@@ -22,6 +23,7 @@ class CreateStudent(BaseModel):
     date_of_birth : date = Field(..., format="yyyy-MM-dd")
     gender : str = Field(...,enum=["MALE","FEMALE"])
     profile_image : Optional[str]
+    govt_id : GovtIdSchema
     parent : ParentCreate 
     address : AddressCreate
     
@@ -44,7 +46,10 @@ class StudentResponse(BaseModel):
     roll_number : int = Field(..., gt=0)
     date_of_birth : date
     gender : str = Field(...,enum=["MALE","FEMALE"])
+    profile_image : Optional[str]
+    govt_id : GovtIdSchema
     standard : StudentStandardResponse
     address : AddressResponse
     parent : ParentResponse
+    
     model_config = {'from_attributes': True}

@@ -3,10 +3,25 @@ from app.exceptions import validation_exception_handler, http_exception_handler,
 from fastapi.exceptions import RequestValidationError,HTTPException
 from app.routers import staff_router,auth_router,student_router,standard_router,attendance_router
 from app.databases import Base,sqlite_engine,postgres_engine
+from contextlib import asynccontextmanager
+from app.crons.syncData import migrate_data
+import logging
+
+logging.basicConfig(filename="sync-attendance.log", level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 
-app = FastAPI()
-# Dependency to get database session
+
+@asynccontextmanager
+async def lifespan(app : FastAPI):
+    await migrate_data()
+    logging.info("🚀 App is starting...")
+    yield
+    logging.info("��� App is stopping...")
+
+
+
+app = FastAPI(lifespan=lifespan)
+
 
         
 app.include_router(staff_router,prefix="/staff",tags=["staff"])
@@ -27,3 +42,4 @@ app.add_exception_handler(BadDataException, bad_data_exception_handler)
 
 Base.metadata.create_all(sqlite_engine)
 Base.metadata.create_all(postgres_engine)
+

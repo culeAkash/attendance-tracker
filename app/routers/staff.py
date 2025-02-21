@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 
 staff_router = APIRouter()
 
-from app.models.staff import Staff
+from app.models import Staff,GovtId,UserType
 from app.schemas.staff import StaffResponse,CreateStaff
 from sqlalchemy.orm import Session
 from app.databases import get_sqlite_db
@@ -26,6 +26,19 @@ async def create_staff(staffData: CreateStaff,db : Session = Depends(get_sqlite_
     db.add(to_create_staff)
     db.commit()
     db.refresh(to_create_staff)  # to get the newly generated id in the response
+    
+    # TODO : ADD govt id to database after checking
+    # check if govt id exists in the database
+    govt_id_data = to_create_staff.govt_id
+    GovtId.check_if_id_exists(id_number=govt_id_data.id_number,user_type=UserType.STAFF,db=db)
+    # create date for govt id
+    govt_id_model = GovtId(**govt_id_data.model_dump(),user_id=to_create_staff.staff_id,user_type=UserType.STAFF)
+    db.add(govt_id_model)
+    db.flush()
+    db.refresh(govt_id_model)
+    
+    
+    
     return ApiResponse[StaffResponse](status="success", message="Staff Created Successfully", status_code=201, data=StaffResponse.model_validate(to_create_staff))
 
 @staff_router.get("/getAllStaff", response_model=ApiResponse[List[StaffResponse]])

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String,ForeignKey,UniqueConstraint,Enum
+from sqlalchemy import Column, String,ForeignKey,UniqueConstraint,Enum,Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 import uuid
@@ -35,6 +35,7 @@ class Standard(Base):
     grade = Column(Enum(Grade),nullable=False)  # e.g., "STD_1"
     section = Column(String,nullable=False)  # e.g., "A"
     class_teacher_id = Column(String,ForeignKey("staff.staff_id"),nullable=False,index=True)
+    is_synced = Column(Boolean, default=False)
     
     # Enforce unique constraint on grade and section together
     __table_args__ = (UniqueConstraint('grade', 'section', name='unique_standard'),)

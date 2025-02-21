@@ -1,8 +1,9 @@
 from app.databases import Base
-from sqlalchemy import Column, Integer,Enum,String
+from sqlalchemy import Column, Integer,Enum,String,Boolean
 import uuid
 import enum
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship,Session
+from app.exceptions import BadDataException
 class GovtIdTypes(enum.Enum):
     PASSPORT = "PASSPORT"
     AADHAR = "AADHAR_CARD"
@@ -23,10 +24,12 @@ class GovtId(Base):
     
     user_id = Column(String, nullable=False,index=True, unique=True)
     user_type = Column(Enum(UserType), nullable=False, index=True)
+    is_synced = Column(Boolean, default=False)
     
-    user = relationship(
-        "User", back_populates="govt_ids", primaryjoin="or_("
-            "and_(Student.student_id == GovtId.user_id, GovtId.user_type == 'STUDENT'),"
-            "and_(Staff.staff_id == GovtId.user_id, GovtId.user_type == 'STAFF')"
-        ")"
-    )
+    @staticmethod
+    def check_if_id_exists(id_number : str, user_type : str, db :Session):
+        govt_id = db.query(GovtId).filter(GovtId.id_number == id_number, GovtId.user_type == user_type).first()
+        if govt_id:
+            raise BadDataException(f"Govt ID {id_number} already exists for another {user_type}")
+        return None
+        

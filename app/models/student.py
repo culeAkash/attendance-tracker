@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, ForeignKey,Enum
+from sqlalchemy import Column, Integer, String, Date, ForeignKey,Enum,Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 import uuid
@@ -19,6 +19,7 @@ class Address(Base):
     state = Column(String, nullable=False)
     country = Column(String, nullable=False)
     student = relationship("Student", back_populates="address")
+    is_synced = Column(Boolean, default=False)
 
 class Student(Base):
     __tablename__ = 'student'
@@ -32,7 +33,7 @@ class Student(Base):
     standard_id = Column(String, ForeignKey('standard.standard_id'))
     parent_id = Column(String, ForeignKey('parent.parent_id'))
     address_id = Column(String, ForeignKey('address.address_id'))
-    govt_id = relationship("GovtId",back_populates="student", primaryjoin="and_(Student.student_id == GovtId.user_id, GovtId.user_type == 'STUDENT')")   
+    govt_id = Column(String,ForeignKey("govt_ids.id"),nullable=True)
     
     # Relationship with Parent model
     standard = relationship("Standard", back_populates="students")

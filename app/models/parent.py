@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String,Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 import uuid
@@ -11,6 +11,6 @@ class Parent(Base):
     name = Column(String, index=True)
     email = Column(String, unique=True, index=True)
     phone = Column(String)
-    
+    is_synced = Column(Boolean, default=False)
     # Relationship with Student model
     students = relationship("Student", back_populates="parent")

@@ -1,12 +1,14 @@
 from pydantic import BaseModel,Field,EmailStr,field_validator
 from typing import Optional
 import phonenumbers
+from .govtid import GovtIdSchema
 class CreateStaff(BaseModel):
     name: str = Field(...,min_length=3,max_length=20)
     email : EmailStr
     phone_number : str
     password : str = Field(...,min_length=8)
     role : str = Field(..., enum=["TEACHER", "PRINCIPAL", "ADMIN"])
+    govt_id : GovtIdSchema
     profile_image : Optional[str]
     
     
@@ -34,5 +36,6 @@ class StaffResponse(BaseModel):
     name: str = Field(...,min_length=3,max_length=20)
     email : EmailStr
     role : str = Field(..., enum=["TEACHER", "PRINCIPAL", "ADMIN"])
-    
+    govt_id : GovtIdSchema
+    profile_image : Optional[str]
     model_config = {'from_attributes': True}

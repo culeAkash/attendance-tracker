@@ -8,3 +8,6 @@ phonenumbers
 pydantic[email]
 pyjwt
 passlib[bcrypt]
+python-multipart
+fastapi-utils[all]
+requests

@@ -1,4 +1,4 @@
-from sqlalchemy import Column,Integer,String,Enum,ForeignKey
+from sqlalchemy import Column,Integer,String,Enum,ForeignKey,Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship,Session
 import uuid
@@ -21,11 +21,12 @@ class Staff(Base):
     hashed_password = Column(String,nullable=False)
     role = Column(Enum(StaffRole),nullable=False)
     profile_image = Column(String,nullable=True)
+    is_synced = Column(Boolean, default=False)
+    govt_id = Column(String,ForeignKey("govt_ids.id"),nullable=True)
     
     #relationships
     standard = relationship("Standard",back_populates="class_teacher",uselist=False)
     attendance_records = relationship("Attendance", back_populates="recorded_by_staff")
-    govt_id = relationship("GovtId",back_populates="staff", primaryjoin="and_(Staff.staff_id == GovtId.user_id, GovtId.user_type == 'STAFF')")
     
     
     @classmethod
