@@ -1,0 +1,2 @@
+from .syncAttendance import automatic_attendance_migration,migrate_attendance_data
+from .syncData import automatic_migration, migrate_data

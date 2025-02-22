@@ -22,7 +22,6 @@ class Staff(Base):
     role = Column(Enum(StaffRole),nullable=False)
     profile_image = Column(String,nullable=True)
     is_synced = Column(Boolean, default=False)
-    govt_id = Column(String,ForeignKey("govt_ids.id"),nullable=True)
     
     #relationships
     standard = relationship("Standard",back_populates="class_teacher",uselist=False)

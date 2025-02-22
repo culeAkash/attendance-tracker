@@ -74,6 +74,12 @@ async def check_current_user_teacher(user : Staff):
         raise NotPermittedException()
     return user
 
+
+async def check_current_user_admin(user : Staff):
+    if user.role!= StaffRole.ADMIN:
+        raise NotPermittedException()
+    return user
+
 async def get_current_user(request: Request,db: Session = Depends(get_sqlite_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,

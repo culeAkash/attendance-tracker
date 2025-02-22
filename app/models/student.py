@@ -33,7 +33,7 @@ class Student(Base):
     standard_id = Column(String, ForeignKey('standard.standard_id'))
     parent_id = Column(String, ForeignKey('parent.parent_id'))
     address_id = Column(String, ForeignKey('address.address_id'))
-    govt_id = Column(String,ForeignKey("govt_ids.id"),nullable=True)
+    is_synced = Column(Boolean, default=False)
     
     # Relationship with Parent model
     standard = relationship("Standard", back_populates="students")
