@@ -1,8 +1,6 @@
 from app.databases import postgres_engine,sqlite_engine
-from sqlalchemy import insert,select
-from sqlalchemy.orm import Session,sessionmaker
+from sqlalchemy.orm import sessionmaker
 from pathlib import Path
-from fastapi import Depends
 from datetime import datetime
 import time
 import requests

@@ -1,15 +1,7 @@
 from fastapi_utils.tasks import repeat_every
-from fastapi import Depends
 import logging
-import time
-import requests
-from app.models import Student,Staff,Parent,Address,Standard,GovtId,Attendance,UserType
-from app.databases import postgres_engine,sqlite_engine
-from sqlalchemy import insert,select
-from sqlalchemy.orm import Session,sessionmaker
-import time
+from app.models import Student,Staff,Standard,Attendance
 from datetime import datetime, timedelta
-from pathlib import Path
 from .utils import PostgresSession,get_last_run_time,set_last_run_time,SQLiteSession,check_internet
 
 
@@ -17,12 +9,12 @@ from .utils import PostgresSession,get_last_run_time,set_last_run_time,SQLiteSes
 logging.basicConfig(filename="sync-data.log", level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 
-@repeat_every(seconds=60*60*3)
+@repeat_every(seconds=60*60*12)
 async def automatic_attendance_migration():
     
     logging.info("🔄 Scheduled Attendance migration triggered...")
     last_run = get_last_run_time(for_attendance=True)
-    if last_run and last_run + timedelta(hours=3) > datetime.now():
+    if last_run and last_run + timedelta(hours=12) > datetime.now():
         logging.warning(f"⏳ Attendance Migration skipped! Last run was on {last_run}. Next allowed after {last_run + timedelta(days=30)}.")
         return  # Exit function
     await migrate_attendance_data()
@@ -65,9 +57,9 @@ async def migrate_attendance_data(current_user : Staff | None = None):
 
                     if not student or not standard or not staff:
                         # skip this attendance
-                        continue
-                    # update staff table in local db updating is_synced  == True
-                    sqlite_session.query(Attendance).filter(Attendance.attendance_id==attendance.attendance_id).update({"is_synced":True})
+                        continue 
+                    # update Attendance table in local db deleting synced data
+                    sqlite_session.query(Attendance).filter(Attendance.attendance_id==attendance.attendance_id).delete()
                     attendance.__setattr__("is_synced", True)
                     data_dicts.append(attendance.__dict__)
                 
@@ -77,9 +69,10 @@ async def migrate_attendance_data(current_user : Staff | None = None):
                 
                 
                 # commit the changes
-                sqlite_session.commit()
                 postgres_session.commit()
+                sqlite_session.commit()
                 is_synced = True
+                set_last_run_time(for_attendance=True)
                 logging.info(f"�� Data migrated for table: Attendance")
         except Exception as e:
             logging.error(f"🚫 Error migrating Attendance data: {e}")
@@ -87,7 +80,6 @@ async def migrate_attendance_data(current_user : Staff | None = None):
             postgres_session.rollback()
             is_synced = False
         finally:
-            set_last_run_time(for_attendance=True)
             sqlite_session.close()
             postgres_session.close()
         if is_synced:

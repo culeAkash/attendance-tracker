@@ -9,7 +9,7 @@ class CreateStaff(BaseModel):
     password : str = Field(...,min_length=8)
     role : str = Field(..., enum=["TEACHER", "PRINCIPAL", "ADMIN"])
     govt_id : GovtIdSchema
-    profile_image : Optional[str]
+    profile_image : str | None = None
     
     
     @field_validator("phone_number")
@@ -36,6 +36,6 @@ class StaffResponse(BaseModel):
     name: str = Field(...,min_length=3,max_length=20)
     email : EmailStr
     role : str = Field(..., enum=["TEACHER", "PRINCIPAL", "ADMIN"])
-    govt_id : GovtIdSchema
-    profile_image : Optional[str]
+    govt_id : GovtIdSchema | None = {}
+    profile_image : str | None = None
     model_config = {'from_attributes': True}

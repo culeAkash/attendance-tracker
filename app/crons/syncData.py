@@ -1,9 +1,6 @@
 from fastapi_utils.tasks import repeat_every
-
 import logging
-
-from app.models import Student,Staff,Parent,Address,Standard,GovtId,Attendance,UserType
-import time
+from app.models import Student,Staff,Parent,Address,Standard,GovtId,UserType
 from datetime import datetime, timedelta
 from .utils import get_last_run_time,set_last_run_time,SQLiteSession,PostgresSession,check_internet
 

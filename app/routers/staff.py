@@ -4,13 +4,14 @@ from fastapi.responses import JSONResponse
 
 staff_router = APIRouter()
 
-from app.models import Staff,GovtId,UserType
+from app.models import Staff,GovtId,UserType,GovtIdTypes
 from app.schemas.staff import StaffResponse,CreateStaff
 from sqlalchemy.orm import Session
 from app.databases import get_sqlite_db
 from app.utils.auth import get_password_hash
 from app.routers.auth import get_current_user
 from app.schemas.responses import ApiResponse
+from app.schemas.govtid import GovtIdSchema
 
 
 @staff_router.post("/createStaff", status_code=201)
@@ -18,28 +19,41 @@ async def create_staff(staffData: CreateStaff,db : Session = Depends(get_sqlite_
     
     #check if staff with email or phone number already exists
     Staff.check_staff_by_email_phone(email=staffData.email,phone=staffData.phone_number,db=db)
-
+    govt_id_data = staffData.govt_id
     hashed_password = get_password_hash(staffData.password)
     staffData.__delattr__("password")
+    staffData.__delattr__("govt_id")
     to_create_staff = Staff(**staffData.model_dump(),hashed_password=hashed_password)
     # to_create_staff.__delattr__("password")
     db.add(to_create_staff)
-    db.commit()
+    db.flush()
     db.refresh(to_create_staff)  # to get the newly generated id in the response
     
     # TODO : ADD govt id to database after checking
     # check if govt id exists in the database
-    govt_id_data = to_create_staff.govt_id
+    
     GovtId.check_if_id_exists(id_number=govt_id_data.id_number,user_type=UserType.STAFF,db=db)
-    # create date for govt id
-    govt_id_model = GovtId(**govt_id_data.model_dump(),user_id=to_create_staff.staff_id,user_type=UserType.STAFF)
+    govt_id_data = GovtIdSchema(**govt_id_data.model_dump())
+    govt_id_model = GovtId(id_type=govt_id_data.id_type,id_number=govt_id_data.id_number,user_id=to_create_staff.staff_id,user_type=UserType.STAFF)
+    
+    
     db.add(govt_id_model)
     db.flush()
     db.refresh(govt_id_model)
+    db.commit()
     
+    staff_response = StaffResponse(
+        staff_id=to_create_staff.staff_id,
+        name=to_create_staff.name,
+        email=to_create_staff.email,
+        role=to_create_staff.role,
+        govt_id=GovtIdSchema(
+            id_type=govt_id_model.id_type,
+            id_number=govt_id_model.id_number,
+        )
+    )
     
-    
-    return ApiResponse[StaffResponse](status="success", message="Staff Created Successfully", status_code=201, data=StaffResponse.model_validate(to_create_staff))
+    return ApiResponse[StaffResponse](status="success", message="Staff Created Successfully", status_code=201, data=staff_response)
 
 @staff_router.get("/getAllStaff", response_model=ApiResponse[List[StaffResponse]])
 async def get_all_staff(current_user : Staff =Depends(get_current_user),db : Session = Depends(get_sqlite_db)):

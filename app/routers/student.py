@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
 from typing import Annotated
-from app.schemas import ApiResponse
+from app.schemas import ApiResponse,GovtIdSchema
 from datetime import datetime
 student_router = APIRouter()
 
@@ -56,6 +56,9 @@ async def create_student(student_data :CreateStudent,standard_query :Annotated[S
         db.refresh(student_parent_model_data)
         db.refresh(address_model_data)
         
+        govt_id_data = student_data.govt_id
+        student_data.__delattr__("govt_id")
+        
         student_data = student_data.model_dump()
     
     # Convert date_of_birth from string to date
@@ -76,23 +79,18 @@ async def create_student(student_data :CreateStudent,standard_query :Annotated[S
         
         # TODO : ADD govt id to database after checking
         # check if govt id exists in the database
-        govt_id_data = student_data.govt_id
         GovtId.check_if_id_exists(id_number=govt_id_data.id_number,user_type=UserType.STUDENT,db=db)
         # create date for govt id
         govt_id_model = GovtId(**govt_id_data.model_dump(),user_id=student_model_data.student_id,user_type=UserType.STUDENT)
         db.add(govt_id_model)
         db.flush()
         db.refresh(govt_id_model)
-        
-        
-        
-        
-        db.commit()
-        
-        
-        student_response = StudentResponse(student_id=student_model_data.student_id,name=student_model_data.name,roll_number=student_model_data.roll_number,date_of_birth=student_model_data.date_of_birth,gender=student_model_data.gender,standard=standard, parent=student_parent_model_data, address=address_model_data)
+        student_response = StudentResponse(student_id=student_model_data.student_id,name=student_model_data.name,roll_number=student_model_data.roll_number,date_of_birth=student_model_data.date_of_birth,gender=student_model_data.gender,standard=standard, parent=student_parent_model_data, address=address_model_data,govt_id=GovtIdSchema(
+            id_number=govt_id_model.id_number,
+            id_type=govt_id_model.id_type
+        ))
 
-        
+        db.commit()
         api_response = ApiResponse(message="Student created successfully",status_code=201,data=student_response)
         return api_response
     except HTTPException as e:

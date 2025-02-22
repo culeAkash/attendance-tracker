@@ -6,10 +6,10 @@ from sqlalchemy.orm import relationship,Session
 from app.exceptions import BadDataException
 class GovtIdTypes(enum.Enum):
     PASSPORT = "PASSPORT"
-    AADHAR = "AADHAR_CARD"
-    DRIVINGLICENSE = "DRIVING_LICENSE"
-    PAN = "PAN_CARD"
-    VOTER_ID = "VOTER_ID_CARD"
+    AADHAR_CARD = "AADHAR_CARD"
+    DRIVING_LICENSE = "DRIVING_LICENSE"
+    PAN_CARD = "PAN_CARD"
+    VOTER_ID_CARD = "VOTER_ID_CARD"
     
 class UserType(enum.Enum):
     STUDENT = "STUDENT"
@@ -18,7 +18,7 @@ class UserType(enum.Enum):
 
 class GovtId(Base):
     __tablename__ = "govt_ids"
-    id = Column(Integer, primary_key=True,default=lambda:str(uuid.uuid4()))
+    id = Column(String, primary_key=True,default=lambda:str(uuid.uuid4()))
     id_type = Column(Enum(GovtIdTypes), nullable=False)
     id_number = Column(String, nullable=False, unique=True)
     
