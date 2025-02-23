@@ -1,6 +1,6 @@
 from fastapi_utils.tasks import repeat_every
 import logging
-from app.models import Student,Staff,Parent,Address,Standard,GovtId,UserType
+from app.models import Student,Staff,Parent,Address,Standard,GovtId,UserType,GovtIdTypes
 from datetime import datetime, timedelta
 from .utils import get_last_run_time,set_last_run_time,SQLiteSession,PostgresSession,check_internet
 
@@ -240,8 +240,21 @@ def migrate_govt_id_data():
                 # skip this govt_id
                 continue
             # update govt_id table in local db updating is_synced  == True
-            sqlite_session.query(GovtId).filter(GovtId.govt_id==govtid.govt_id).update({"is_synced":True})
+            sqlite_session.query(GovtId).filter(GovtId.id==govtid.id).update({"is_synced":True})
             govtid.__setattr__("is_synced", True)
+            
+            match govtid.id_type:
+                case "AADHAR_CARD":
+                    govtid.__setattr__("id_type", GovtIdTypes.AADHAR_CARD)
+                case "PAN_CARD":
+                    govtid.__setattr__("id_type", GovtIdTypes.PAN_CARD)
+                case "DRIVING_LICENSE":
+                    govtid.__setattr__("id_type", GovtIdTypes.DRIVING_LICENSE)
+                case "PASSPORT":
+                    govtid.__setattr__("id_type", GovtIdTypes.PASSPORT)
+                case "VOTER_ID_CARD":
+                    govtid.__setattr__("id_type", GovtIdTypes.VOTER_ID_CARD)
+            logging.info(f"GovtIdType : {govtid.id_type} {type(govtid.id_type)}")
             data_dicts.append(govtid.__dict__)
         
         # store the govt_ids which have their corresponding user (student or staff) in the cloud table

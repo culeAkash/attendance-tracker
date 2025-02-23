@@ -84,7 +84,6 @@ async def upload_image(query_params: Annotated[ImageUploadQueryParams,Query()],p
         "user_id":user_id,
         "name" : user.name,
         "profile_image":user.profile_image,
-        "email" : user.email
     }
     
     api_response =  ApiResponse(status="success",message="Image uploaded successfully",status_code=200,data=user_data)

@@ -105,7 +105,7 @@ async def create_student(student_data :CreateStudent,standard_query :Annotated[S
     
     
 @student_router.get("/get_all_students")
-async def get_all_students(current_user : Staff =  Depends(get_current_user),db:Session =  Depends(get_sqlite_db)):
+async def get_all_students(db:Session =  Depends(get_sqlite_db)):
     all_students = db.query(Student).all()
     student_responses = []
     # fetch govtid for all students
@@ -144,7 +144,7 @@ class StandardQueryParams(BaseModel):
         return grade
     
 @student_router.get("/get_all_students_of_standard")
-async def get_all_students_of_standard(standard_query : Annotated[StandardQueryParams,Query()], current_user : Staff =  Depends(get_current_user),db:Session =  Depends(get_sqlite_db)):
+async def get_all_students_of_standard(standard_query : Annotated[StandardQueryParams,Query()],db:Session =  Depends(get_sqlite_db)):
     # get standard data of the given standard query
     standard =  Standard.get_standard_by_grade_and_section(standard_query.grade, standard_query.section,db)
     

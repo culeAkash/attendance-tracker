@@ -26,8 +26,8 @@ os.makedirs(STAFF_DIR, exist_ok=True)
 
 @asynccontextmanager
 async def lifespan(app : FastAPI):
-    # await automatic_migration()
-    # await automatic_attendance_migration()
+    await automatic_migration()
+    await automatic_attendance_migration()
     logging.info("🚀 App is starting...")
     yield
     logging.info("��� App is stopping...")
