@@ -22,7 +22,6 @@ class CreateStudent(BaseModel):
     name : str = Field(...,min_length=5,max_length=20)
     date_of_birth : date = Field(..., format="yyyy-MM-dd")
     gender : str = Field(...,enum=["MALE","FEMALE"])
-    profile_image : Optional[str] = Field(default=None)
     govt_id : GovtIdSchema
     parent : ParentCreate 
     address : AddressCreate
@@ -43,9 +42,9 @@ class StudentStandardResponse(BaseModel):
 class StudentResponse(BaseModel):
     student_id : str
     name : str = Field(...,min_length=5,max_length=20)
-    roll_number : int = Field(..., gt=0)
+    roll_number : Optional[int] = Field(..., gt=0)
     date_of_birth : date
-    gender : str = Field(...,enum=["MALE","FEMALE"])
+    gender : str  = Field(...,enum=["MALE","FEMALE"])
     profile_image : Optional[str] = Field(default=None)
     govt_id : GovtIdSchema
     standard : StudentStandardResponse

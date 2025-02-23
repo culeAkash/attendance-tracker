@@ -1,4 +1,4 @@
-from fastapi import APIRouter,Depends
+from fastapi import APIRouter,Depends,File,UploadFile
 from typing import List
 from fastapi.responses import JSONResponse
 
@@ -9,14 +9,18 @@ from app.schemas.staff import StaffResponse,CreateStaff
 from sqlalchemy.orm import Session
 from app.databases import get_sqlite_db
 from app.utils.auth import get_password_hash
-from app.routers.auth import get_current_user
+from app.routers.auth import get_current_user,check_current_user_admin
 from app.schemas.responses import ApiResponse
 from app.schemas.govtid import GovtIdSchema
 
 
 @staff_router.post("/createStaff", status_code=201)
-async def create_staff(staffData: CreateStaff,db : Session = Depends(get_sqlite_db)):
+async def create_staff(staffData: CreateStaff,db : Session = Depends(get_sqlite_db),current_user : Staff = Depends(get_current_user)):
     
+    # check if staff is admin
+    current_user = await check_current_user_admin(current_user)
+    
+
     #check if staff with email or phone number already exists
     Staff.check_staff_by_email_phone(email=staffData.email,phone=staffData.phone_number,db=db)
     govt_id_data = staffData.govt_id
@@ -62,3 +66,13 @@ async def get_all_staff(current_user : Staff =Depends(get_current_user),db : Ses
     staff_responses = [StaffResponse.model_validate(staff) for staff in all_staff]
     print(staff_responses)
     return ApiResponse[List[StaffResponse]](status="success", message="All Staff", status_code=200, data=staff_responses)
+
+@staff_router.get("/get_staff_image/{staff_id}")
+async def get_staff_image(staff_id :str,db: Session = Depends(get_sqlite_db)):
+    staff = Staff.get_staff_by_staff_id(staff_id=staff_id,db=db)
+    return ApiResponse(
+        status="success",
+        message="Staff Image",
+        status_code=200,
+        data=staff.profile_image,
+    )

@@ -1,11 +1,13 @@
 from fastapi import APIRouter,Depends,Query
 from app.schemas.student import CreateStudent,StudentResponse
 from app.models.staff import Staff
+from app.models.standard import Standard
+from app.exceptions import BadDataException
 from app.routers.auth import get_current_user,check_current_user_admin_principal
 from app.databases import get_sqlite_db
 from sqlalchemy.orm import Session
 from app.models  import Student,Parent,Address,Standard,GovtId,UserType
-from pydantic import BaseModel
+from pydantic import BaseModel,field_validator
 from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
 from typing import Annotated
@@ -16,6 +18,13 @@ student_router = APIRouter()
 class StudentCreateParams(BaseModel):
     grade : str
     section : str
+    
+    @field_validator("grade")
+    @classmethod
+    def validate_grade(cls, grade):
+        if grade not in ["NURSERY", "UKG", "LKG", "STD_1", "STD_2", "STD_3", "STD_4", "STD_5", "STD_6", "STD_7", "STD_8", "STD_9", "STD_10", "STD_11", "STD_12"]:
+            raise BadDataException("Invalid grade. Grade should be one of NURSERY, UKG, LKG, STD_1, STD_2, STD_3, STD_4, STD_5, STD_6, STD_7, STD_8, STD_9, STD_10, STD_11, STD_12")
+        return grade
 
 @student_router.post("/create_student",status_code=201)
 async def create_student(student_data :CreateStudent,standard_query :Annotated[StudentCreateParams,Query()],current_user : Staff =Depends(get_current_user),db : Session = Depends(get_sqlite_db)):
@@ -41,13 +50,6 @@ async def create_student(student_data :CreateStudent,standard_query :Annotated[S
         
         #TODO : check if standard exists of given grade and section
         standard = Standard.get_standard_by_grade_and_section(standard_query.grade, standard_query.section,db=db)
-        
-        
-        
-        
-        # TODO : add image to database after checking
-        
-        
         
         # create student data
         student_data.__delattr__("address")
@@ -102,5 +104,73 @@ async def create_student(student_data :CreateStudent,standard_query :Annotated[S
         db.close()
     
     
+@student_router.get("/get_all_students")
+async def get_all_students(current_user : Staff =  Depends(get_current_user),db:Session =  Depends(get_sqlite_db)):
+    all_students = db.query(Student).all()
+    student_responses = []
+    # fetch govtid for all students
+    for student in all_students:
+        govt_id = GovtId.get_govt_id_by_user_id(user_id=student.student_id,user_type=UserType.STUDENT,db=db)
+        if not govt_id:
+            continue
+        else:
+            govt_id = GovtIdSchema(
+                id_number=govt_id.id_number,
+                id_type=govt_id.id_type
+            )
+        student_response = StudentResponse(
+            student_id=student.student_id,
+            name=student.name,
+            roll_number=student.roll_number,
+            date_of_birth=student.date_of_birth,
+            gender=student.gender,
+            standard=student.standard,
+            parent=student.parent,
+            address=student.address,
+            govt_id=govt_id
+        )
+        student_responses.append(student_response) 
+    return ApiResponse(status="success", message="All Students", status_code=200, data=student_responses)
     
+class StandardQueryParams(BaseModel):
+    grade : str
+    section : str
     
+    @field_validator("grade")
+    @classmethod
+    def validate_grade(cls, grade):
+        if grade not in ["NURSERY", "UKG", "LKG", "STD_1", "STD_2", "STD_3", "STD_4", "STD_5", "STD_6", "STD_7", "STD_8", "STD_9", "STD_10", "STD_11", "STD_12"]:
+            raise BadDataException("Invalid grade. Grade should be one of NURSERY, UKG, LKG, STD_1, STD_2, STD_3, STD_4, STD_5, STD_6, STD_7, STD_8, STD_9, STD_10, STD_11, STD_12")
+        return grade
+    
+@student_router.get("/get_all_students_of_standard")
+async def get_all_students_of_standard(standard_query : Annotated[StandardQueryParams,Query()], current_user : Staff =  Depends(get_current_user),db:Session =  Depends(get_sqlite_db)):
+    # get standard data of the given standard query
+    standard =  Standard.get_standard_by_grade_and_section(standard_query.grade, standard_query.section,db)
+    
+    # fetch all students of the given standard
+    all_students = db.query(Student).filter(Student.standard_id == standard.standard_id).all()
+    student_responses = []
+    # fetch govtid for all students
+    for student in all_students:
+        govt_id = GovtId.get_govt_id_by_user_id(user_id=student.student_id,user_type=UserType.STUDENT,db=db)
+        if not govt_id:
+            continue
+        else:
+            govt_id = GovtIdSchema(
+                id_number=govt_id.id_number,
+                id_type=govt_id.id_type
+            )
+        student_response = StudentResponse(
+            student_id=student.student_id,
+            name=student.name,
+            roll_number=student.roll_number,
+            date_of_birth=student.date_of_birth,
+            gender=student.gender,
+            standard=student.standard,
+            parent=student.parent,
+            address=student.address,
+            govt_id=govt_id
+        )
+        student_responses.append(student_response) 
+    return ApiResponse(status="success", message="All Students", status_code=200, data=student_responses)

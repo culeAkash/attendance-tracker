@@ -32,4 +32,9 @@ class GovtId(Base):
         if govt_id:
             raise BadDataException(f"Govt ID {id_number} already exists for another {user_type}")
         return None
+    
+    @staticmethod
+    def get_govt_id_by_user_id(user_id : str, user_type : str, db : Session):
+        govtid = db.query(GovtId).filter(GovtId.user_id == user_id, GovtId.user_type == user_type).first()
+        return govtid
         
