@@ -1,13 +1,15 @@
 from pydantic import BaseModel,Field,EmailStr,field_validator
+from typing import List, Optional
 from typing import Optional
 import phonenumbers
 from .govtid import GovtIdSchema
+from app.exceptions import BadDataException
 class CreateStaff(BaseModel):
     name: str = Field(...,min_length=3,max_length=20)
     email : EmailStr
     phone_number : str
     password : str = Field(...,min_length=8)
-    role : str = Field(..., enum=["TEACHER", "PRINCIPAL", "ADMIN"])
+    role : Optional[str] = Field(default="TEACHER")
     govt_id : GovtIdSchema
     
     
@@ -19,15 +21,15 @@ class CreateStaff(BaseModel):
             if phonenumbers.is_valid_number(parsed_number):
                 return phone_number
             else:
-                raise ValueError("Invalid phone number")
+                raise BadDataException(detail="Invalid phone number")
         except phonenumbers.phonenumberutil.NumberParseException as e:
-            raise ValueError("Invalid phone number") from e
+            raise BadDataException(detail="Invalid phone number") from e
         
     @field_validator("role")
     @classmethod
-    def validate_role(cls,role):
-        if role not in ["TEACHER", "PRINCIPAL", "ADMIN"]:
-            raise ValueError("Invalid role")
+    def validate_email(cls,role):
+        if role not in ["TEACHER"]:
+            raise BadDataException(detail="Only one role can be assigned to a staff")
         return role
         
 class StaffResponse(BaseModel):
@@ -35,6 +37,17 @@ class StaffResponse(BaseModel):
     name: str = Field(...,min_length=3,max_length=20)
     email : EmailStr
     role : str = Field(..., enum=["TEACHER", "PRINCIPAL", "ADMIN"])
-    govt_id : GovtIdSchema | None = {}
     profile_image : Optional[str] = Field(default=None)
     model_config = {'from_attributes': True}
+    
+    
+class GiveAdminPermissionParams(BaseModel):
+    staff_id : str
+    role : str
+    
+    @classmethod
+    @field_validator("role")
+    def validate_role(cls,role):
+        if role not in ["TEACHER", "ADMIN"]:
+            raise BadDataException("Role must be one of TEACHER, ADMIN")
+        return role

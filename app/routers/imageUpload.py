@@ -1,13 +1,13 @@
 from fastapi import APIRouter,Query,UploadFile,File,Depends,File,UploadFile
 from typing import Annotated
-from pydantic import BaseModel,Field,field_validator
+
 from sqlalchemy.orm import Session
 from app.databases import get_sqlite_db
 from app.exceptions import BadDataException
 from app.models import Staff,Student
-from app.routers.auth import get_current_user,check_current_user_admin
+from app.utils.auth import check_current_user_admin
 from app.exceptions import ResourceNotFoundException
-from app.schemas import ApiResponse
+from app.schemas import ApiResponse,ImageUploadQueryParams
 import os
 import uuid
 import shutil
@@ -18,22 +18,13 @@ UPLOAD_DIR = "uploads"
 STUDENT_DIR = os.path.join(UPLOAD_DIR, "students")
 STAFF_DIR = os.path.join(UPLOAD_DIR, "staff")
 
-class ImageUploadQueryParams(BaseModel):
-    user_type : str = Field(...,enum=["STAFF","STUDENT"])
-    user_id : str
-    
-    @classmethod
-    @field_validator("user_type")
-    def validate_user_type(cls,user_type):
-        if user_type not in ["STAFF","STUDENT"]:
-            raise BadDataException("Invalid user type")
-        return user_type
+
 
 
 @upload_file_router.post("/image")
 async def upload_image(query_params: Annotated[ImageUploadQueryParams,Query()],profile_image : UploadFile = File(...),
-                       db : Session = Depends(get_sqlite_db),current_user : Staff = Depends(get_current_user)):
-    await check_current_user_admin(current_user)
+                       db : Session = Depends(get_sqlite_db),current_user : Staff = Depends(check_current_user_admin)):
+    # await check_current_user_admin(current_user)
     
     user_type = query_params.user_type
     user_id = query_params.user_id

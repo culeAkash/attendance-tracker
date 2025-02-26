@@ -6,8 +6,8 @@ from app.databases import Base,sqlite_engine,postgres_engine
 from contextlib import asynccontextmanager
 from app.crons import migrate_data,automatic_migration,migrate_attendance_data,automatic_attendance_migration
 import logging
-from app.routers.auth import get_current_user,check_current_user_admin
-from app.models.staff import Staff,StaffRole
+from app.utils.auth import get_current_user,check_current_user_admin
+from app.models import Staff
 import os
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -40,7 +40,7 @@ app = FastAPI(lifespan=lifespan)
 # Define allowed origins
 origins = [
     "http://localhost",
-    "http://localhost:3000",  # Allow frontend running on port 3000
+    "http://localhost:5173",  # Allow frontend running on port 3000
 ]
 
 # Add CORS middleware
@@ -74,7 +74,7 @@ app.include_router(staff_router,prefix="/staff",tags=["staff"])
 app.include_router(auth_router,prefix="/auth",tags=["auth"])
 app.include_router(student_router, prefix="/students", tags=["student"])
 app.include_router(standard_router,prefix="/standard",tags=["standard"])
-app.include_router(attendance_router,prefix="/attendance",tags=["standard"])
+app.include_router(attendance_router,prefix="/attendance",tags=["attendance"])
 app.include_router(upload_file_router,prefix="/upload",tags=["upload"])
 
         

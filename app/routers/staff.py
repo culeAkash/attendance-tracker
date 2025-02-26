@@ -1,24 +1,23 @@
-from fastapi import APIRouter,Depends,File,UploadFile
+from fastapi import APIRouter,Depends,File,UploadFile,Query
 from typing import List
 from fastapi.responses import JSONResponse
-
-staff_router = APIRouter()
-
-from app.models import Staff,GovtId,UserType,GovtIdTypes
-from app.schemas.staff import StaffResponse,CreateStaff
+from app.models import Staff,GovtId,UserType
 from sqlalchemy.orm import Session
 from app.databases import get_sqlite_db
 from app.utils.auth import get_password_hash
-from app.routers.auth import get_current_user,check_current_user_admin
-from app.schemas.responses import ApiResponse
-from app.schemas.govtid import GovtIdSchema
+from app.utils.auth import get_current_user,check_current_user_admin_principal,check_current_user_principal
+from typing import Annotated
+from fastapi.encoders import jsonable_encoder
+from app.schemas import GiveAdminPermissionParams,StaffResponse,CreateStaff,ApiResponse,GovtIdSchema
+
+staff_router = APIRouter()
 
 
 @staff_router.post("/createStaff", status_code=201)
-async def create_staff(staffData: CreateStaff,db : Session = Depends(get_sqlite_db),current_user : Staff = Depends(get_current_user)):
+async def create_staff(staffData: CreateStaff,db : Session = Depends(get_sqlite_db),current_user : Staff = Depends(check_current_user_admin_principal)):
     
     # check if staff is admin
-    current_user = await check_current_user_admin(current_user)
+    # current_user = await check_current_user_admin_principal(current_user)
     
 
     #check if staff with email or phone number already exists
@@ -76,3 +75,23 @@ async def get_staff_image(staff_id :str,db: Session = Depends(get_sqlite_db)):
         status_code=200,
         data=staff.profile_image,
     )
+    
+
+    
+    
+@staff_router.patch("/change_staff_role")
+async def give_admin_permissions(params : Annotated[GiveAdminPermissionParams,Query()], db: Session = Depends(get_sqlite_db),current_user : Staff = Depends(check_current_user_principal)):
+    try:
+        # check if staff with given staff_id exists
+        staff = Staff.get_staff_by_staff_id(staff_id=params.staff_id,db=db)
+        staff.role = params.role
+        db.commit()
+        db.refresh(staff)
+        return ApiResponse(status="success", message="User role changed", status_code=200, data=jsonable_encoder(staff,exclude={"hashed_password","phone_number","is_synced"}))
+    except Exception as e:
+        db.rollback()
+        return JSONResponse(status_code=500, content={"message": e})
+    finally:
+        db.close()
+
+    

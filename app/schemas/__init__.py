@@ -1,5 +1,8 @@
 from .responses import ApiResponse,GenericExceptionResponse
-from .staff import CreateStaff,StaffResponse
-from .student import CreateStudent,StudentResponse
-from .standard import CreateStandardRequest, CreateStandardQueryParams, StandardResponse
+from .staff import CreateStaff,StaffResponse,GiveAdminPermissionParams
+from .student import CreateStudent,StudentResponse,StudentCreateParams
+from .standard import CreateStandardRequest, CreateStandardQueryParams, StandardResponse,StandardQueryParams
 from .govtid import GovtIdSchema
+from .auth import LoginData,TokenData
+from .imageUpload import ImageUploadQueryParams
+from .attendance import CreateAttendanceRequest,AttendanceResponse,CreateAttendanceQueryParams

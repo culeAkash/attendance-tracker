@@ -27,7 +27,6 @@ class Grade(enum.Enum):
     STD_12 = "STD_12"
     
     
-
 class Standard(Base):
     __tablename__ = 'standard'
     
