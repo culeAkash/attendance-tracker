@@ -1,15 +1,19 @@
 from fastapi import APIRouter,Query,Depends
-from app.schemas import CreateStandardRequest,CreateStandardQueryParams,StandardResponse,ApiResponse
+from app.schemas import CreateStandardRequest,CreateStandardQueryParams,StandardResponse,ApiResponse,StandardQueryParams
 from app.databases import get_sqlite_db
-from app.utils.auth import check_current_user_admin_principal
+from app.utils.auth import check_current_user_admin_principal,get_current_user
 from sqlalchemy.orm import Session
-from app.models import Staff,Standard
+from app.models import Staff,Standard,UserType
 from typing import Annotated
 from app.models import Staff
 from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
-from .student import StandardQueryParams
+import logging
+
 standard_router = APIRouter()
+
+# Configure logging
+logging.basicConfig(filename="activity.log", level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 
 @standard_router.post("/create_standard",status_code=201)
@@ -28,7 +32,7 @@ async def create_standard(standard_data : CreateStandardRequest,standard_params 
         db.flush()
         db.refresh(standard_model_obj)
         
-        standard_response = StandardResponse(standard_id=standard_model_obj.standard_id, grade=standard_model_obj.grade, section=standard_model_obj.section, class_teacher=staff)
+        standard_response = StandardResponse(standard_id=standard_model_obj.standard_id, grade=Standard.get_mapped_grade_by_enum_string(standard_model_obj.grade), section=standard_model_obj.section, class_teacher=staff)
         
         api_response = ApiResponse[StandardResponse](
             success=True,
@@ -59,4 +63,39 @@ async def get_standard_class_teacher(standard_query : Annotated[StandardQueryPar
         data=standard_response
     )
     
-    
+# TODO : testing to be done
+@standard_router.get("/get_all_standard_for_staff")
+async def get_all_standard_of_class_teacher(db : Session = Depends(get_sqlite_db),current_user : Staff = Depends(get_current_user)):
+    try:
+        # if current_user is not TEACHER fetch all the classes
+        # else fetch only the classes of the current user
+        if  current_user.role == UserType.TEACHER:
+            standards = Standard.get_standards_by_class_teacher_id(class_teacher_id=current_user.staff_id,db=db)
+        else:
+            standards = db.query(Standard).all()
+        
+        standards_response = [StandardResponse(standard_id=standard.standard_id, grade=Standard.get_mapped_grade_by_enum_string(standard.grade), section=standard.section, class_teacher=standard.class_teacher) for standard in standards]
+        return ApiResponse(
+            status="success",
+            message="Standards fetched successfully",
+            status_code=200,
+            data=standards_response
+        )
+    except HTTPException as e:
+        db.rollback()
+        return JSONResponse(status_code=e.status_code, content={"message": e.detail})
+    finally:
+        db.close()
+        
+        
+@standard_router.get("/get_all_standards")
+async def get_all_standards(db : Session = Depends(get_sqlite_db)):
+    standards = db.query(Standard).all()
+    # logging.info(f"grade : {standards[0].grade}, type : {type(standards[0].grade)}")
+    standards_response = [StandardResponse(standard_id=standard.standard_id, grade=Standard.get_mapped_grade_by_enum_string(standard.grade), section=standard.section, class_teacher=standard.class_teacher) for standard in standards]
+    return ApiResponse(
+        status="success",
+        message="Standards fetched successfully",
+        status_code=200,
+        data=standards_response
+    )

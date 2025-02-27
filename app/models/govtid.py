@@ -3,7 +3,7 @@ from sqlalchemy import Column, Integer,Enum,String,Boolean
 import uuid
 import enum
 from sqlalchemy.orm import relationship,Session
-from app.exceptions import BadDataException
+from app.exceptions import BadDataException,ResourceNotFoundException
 class GovtIdTypes(enum.Enum):
     PASSPORT = "PASSPORT"
     AADHAR_CARD = "AADHAR_CARD"
@@ -27,11 +27,18 @@ class GovtId(Base):
     is_synced = Column(Boolean, default=False)
     
     @staticmethod
-    def check_if_id_exists(id_number : str, user_type : str, db :Session):
+    async def check_if_id_exists(id_number : str, user_type : str, db :Session):
         govt_id = db.query(GovtId).filter(GovtId.id_number == id_number, GovtId.user_type == user_type).first()
         if govt_id:
             raise BadDataException(f"Govt ID {id_number} already exists for another {user_type}")
         return None
+    
+    @staticmethod
+    async def get_govt_id_by_id(db : Session, id : str):
+        govt_id = db.query(GovtId).filter(GovtId.id == id).first()
+        if not govt_id:
+            raise ResourceNotFoundException("GovtId","govt_id", id)
+        return govt_id
     
     @staticmethod
     def get_govt_id_by_user_id(user_id : str, user_type : str, db : Session):

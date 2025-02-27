@@ -15,7 +15,7 @@ class ApiResponse(GenericModel,Generic[T]):
     message: str
     status_code: int
     time_stamp: str = Field(default_factory=lambda: datetime.now(ist).isoformat()) 
-    data: T
+    data: T = []
     
     class Config:
         json_encoders = {

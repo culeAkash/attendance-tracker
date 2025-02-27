@@ -18,8 +18,15 @@ class Address(Base):
     city = Column(String, nullable=False)
     state = Column(String, nullable=False)
     country = Column(String, nullable=False)
-    student = relationship("Student", back_populates="address")
+    student = relationship("Student", back_populates="address",uselist=False,cascade="all,delete-orphan")
     is_synced = Column(Boolean, default=False)
+    
+    @staticmethod
+    async def get_address_by_id(address_id: str, db: Session):
+        address = db.query(Address).filter(Address.address_id == address_id).first()
+        if not address:
+            raise ResourceNotFoundException("Address","address_id",address_id)
+        return address
 
 class Student(Base):
     __tablename__ = 'student'
@@ -31,13 +38,13 @@ class Student(Base):
     gender = Column(Enum(Gender), nullable=False)
     profile_image = Column(String, nullable=True)
     standard_id = Column(String, ForeignKey('standard.standard_id'))
-    parent_id = Column(String, ForeignKey('parent.parent_id'))
-    address_id = Column(String, ForeignKey('address.address_id'))
+    parent_id = Column(String, ForeignKey('parent.parent_id',ondelete="CASCADE"))
+    address_id = Column(String, ForeignKey('address.address_id',ondelete="CASCADE"))
     is_synced = Column(Boolean, default=False)
     
     # Relationship with Parent model
     standard = relationship("Standard", back_populates="students")
-    parent = relationship("Parent", back_populates="students")
+    parent = relationship("Parent", back_populates="students",uselist=False)
     attendance_records = relationship("Attendance", back_populates="student")
     address = relationship("Address", back_populates="student",uselist=False)
     

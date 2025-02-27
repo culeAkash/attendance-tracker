@@ -1,15 +1,21 @@
 from pydantic import BaseModel,Field,EmailStr,field_validator
 import phonenumbers
-from .parent import ParentCreate,ParentResponse
+from .parent import ParentCreate,ParentResponse,UpdateParentSchema
 from datetime import date,datetime
 from typing import Optional
-from .govtid import GovtIdSchema
+from .govtid import GovtIdSchema,UpdateGovtIdSchema
 from app.exceptions import BadDataException
 class AddressCreate(BaseModel):
     street : str = Field(..., min_length=5, max_length=50)
     city : str = Field(..., min_length=3, max_length=20)
     state : str = Field(..., min_length=3, max_length=20)
     country : str = Field(..., min_length=3, max_length=20)
+    
+class UpdateAddressSchema(BaseModel):
+    street : Optional[str] = Field(None, min_length=5, max_length=50)
+    city : Optional[str] = Field(None, min_length=3, max_length=20)
+    state : Optional[str] = Field(None, min_length=3, max_length=20)
+    country : Optional[str] = Field(None, min_length=3, max_length=20)
     
 class AddressResponse(BaseModel):
     address_id : str
@@ -30,6 +36,23 @@ class CreateStudent(BaseModel):
     @field_validator("gender")
     @classmethod
     def validate_gender(cls,gender):
+        if gender not in ["MALE","FEMALE"]:
+            raise ValueError("Invalid gender")
+        return gender
+    
+class UpdateStudentSchema(BaseModel):
+    name : Optional[str] = Field(default=None,min_length=5,max_length=20)
+    date_of_birth : Optional[date] = Field(default=None, format="yyyy-MM-dd")
+    gender : Optional[str] = Field(default=None,num=["MALE","FEMALE"])
+    govt_id : UpdateGovtIdSchema = None
+    parent : UpdateParentSchema = None
+    address : UpdateAddressSchema = None
+    
+    @field_validator("gender")
+    @classmethod
+    def validate_gender(cls,gender):
+        if gender is None:
+            return None
         if gender not in ["MALE","FEMALE"]:
             raise ValueError("Invalid gender")
         return gender
@@ -65,3 +88,9 @@ class StudentCreateParams(BaseModel):
         if grade not in ["NURSERY", "UKG", "LKG", "STD_1", "STD_2", "STD_3", "STD_4", "STD_5", "STD_6", "STD_7", "STD_8", "STD_9", "STD_10", "STD_11", "STD_12"]:
             raise BadDataException("Invalid grade. Grade should be one of NURSERY, UKG, LKG, STD_1, STD_2, STD_3, STD_4, STD_5, STD_6, STD_7, STD_8, STD_9, STD_10, STD_11, STD_12")
         return grade
+    
+class DeleteStudentParams(BaseModel):
+    student_id : str
+    
+class UpdateStudentParams(BaseModel):
+    student_id : str

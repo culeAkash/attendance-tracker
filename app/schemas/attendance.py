@@ -17,6 +17,9 @@ class CreateAttendanceRequest(BaseModel):
             raise BadDataException("Status must be one of PRESENT or ABSENT")
         return status
     
+    model_config = {'from_attributes': True}
+
+    
 class AttendanceResponse(BaseModel):
     attendance_id: str
     date_of_attendance : date = Field(..., format="yyyy-MM-dd")

@@ -68,6 +68,44 @@ class Standard(Base):
             raise ResourceNotFoundException("Standard","standard_id",standard_id)
         return standard
     
+    @staticmethod
+    def get_standards_by_class_teacher_id(class_teacher_id, db:Session):
+        standards = db.query(Standard).filter_by(class_teacher_id=class_teacher_id).all()
+        return standards
+    
+    @staticmethod
+    def get_mapped_grade_by_enum_string(enum_string):
+        match enum_string:
+            case Grade.NURSERY:
+                return "NURSERY"
+            case Grade.UKG:
+                return "UKG"
+            case Grade.LKG:
+                return "LKG"
+            case Grade.STD_1:
+                return "STD_1"
+            case Grade.STD_2:
+                return "STD_2"
+            case Grade.STD_3:
+                return "STD_3"
+            case Grade.STD_4:
+                return "STD_4"
+            case Grade.STD_5:
+                return "STD_5"
+            case Grade.STD_6:
+                return "STD_6"
+            case Grade.STD_7:
+                return "STD_7"
+            case Grade.STD_8:
+                return "STD_8"
+            case Grade.STD_9:
+                return "STD_9"
+            case Grade.STD_10:
+                return "STD_10"
+            case Grade.STD_11:
+                return "STD_11"
+            case Grade.STD_12:
+                return "STD_12"
     
         
     
